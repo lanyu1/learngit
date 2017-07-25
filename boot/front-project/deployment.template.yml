@@ -1,0 +1,57 @@
+kind: DeploymentConfig
+apiVersion: v1
+metadata:
+  name: $APP
+spec:
+  selector:
+    name: $APP
+  template: 
+    metadata:
+      labels:
+        name: $APP
+        COMMIT_SHA: $CI_COMMIT_SHA
+    spec:
+      containers:
+      - name: hap-cloud-console
+        image: registry.saas.hand-china.com/all4you/aiit:$IMAGES_TAG
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+          protocol: TCP
+  replicas: 1
+  triggers:
+  - type: ConfigChange 
+  strategy: 
+    type: Rolling
+  paused: false 
+  revisionHistoryLimit: 2
+  minReadySeconds: 0
+---
+kind: Service
+apiVersion: v1
+metadata:
+  labels:
+    app: $APP
+  name: $APP
+spec:
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    name: $APP
+
+---
+apiVersion: v1
+kind: Route
+metadata:
+  name: $APP
+  labels:
+    app: $APP
+spec:
+  host: $APP_HOST
+  to:
+    kind: Service
+    name: $APP
+    weight: 100
+  wildcardPolicy: None

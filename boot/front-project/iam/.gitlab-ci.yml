@@ -1,0 +1,163 @@
+image: registry.saas.hand-china.com/openshift/origin-cli:v1.5.0
+
+stages:
+  - package
+  - build
+  - review
+  - staging
+  - production-package
+  - production-build
+  - production-deploy
+  - cleanup
+  
+variables:
+  CI_PROJECT_NAME: hap-new-front
+
+.node-build-template: &node-build-template
+  image: registry.saas.hand-china.com/tools/node:7.10.0
+  stage: package
+  before_script:
+    - "cd ../ && mv front_iam iam"
+    - "git clone https://jenkins:$TOKEN@rdc.hand-china.com/gitlab/HAPCloud/front_boot.git boot"
+    - "cd boot"
+  script:
+    - "ln -s /cache/front_iam/node_modules node_modules"
+    - "npm install"
+    - "./node_modules/.bin/gulp start"
+    - "CONSOLE_HOST=http://$APP_HOST API_HOST=$API_HOST npm run build"
+    - "mkdir /cache/$CI_PROJECT_NAME-$CI_PROJECT_ID-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA/"
+    - "cp -r dist /cache/$CI_PROJECT_NAME-$CI_PROJECT_ID-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA/dist"
+    - "cd ../ && mv iam front_iam && cd front_iam"
+    
+
+node-build-production:
+  <<: *node-build-template
+  stage: production-package
+  variables:
+    APP_HOST: $CI_PROJECT_NAME.$OPENSHIFT_DOMAIN
+    API_HOST: $API_HOST_PROD
+  when: manual
+  allow_failure: false
+  only:
+    - master
+
+node-build-staging:
+  <<: *node-build-template
+  variables:
+    APP_HOST: $CI_PROJECT_NAME-staging.$OPENSHIFT_DOMAIN
+    API_HOST: $API_HOST_STAGING
+  only:
+    - master
+
+node-build-review:
+  <<: *node-build-template
+  variables:
+    APP_HOST: $CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG.$OPENSHIFT_DOMAIN
+    API_HOST: $API_HOST_STAGING
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+  only:
+    - branches
+  except:
+    - master
+
+
+.docker-build-template: &docker-build-template
+  stage: build
+  image: registry.saas.hand-china.com/tools/docker:latest
+  before_script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.cloud.saas.hand-china.com
+  script:
+    - "cp -r /cache/$CI_PROJECT_NAME-$CI_PROJECT_ID-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA/dist dist"
+    - "docker build -t registry.cloud.saas.hand-china.com/hapcloud/front_iam:$CI_COMMIT_REF_NAME ."
+    - "docker push registry.cloud.saas.hand-china.com/hapcloud/front_iam:$CI_COMMIT_REF_NAME"
+  after_script:
+    - "rm -rf /cache/$CI_PROJECT_NAME-$CI_PROJECT_ID-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA"
+  only:
+    - branches
+
+docker-build:
+  <<: *docker-build-template
+
+
+docker-build-production:
+  <<: *docker-build-template
+  stage: production-build
+  script:
+    - "cp -r /cache/$CI_PROJECT_NAME-$CI_PROJECT_ID-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA/dist dist"
+    - "docker build -t registry.cloud.saas.hand-china.com/hapcloud/front_iam:prod ."
+    - "docker push registry.cloud.saas.hand-china.com/hapcloud/front_iam:prod"
+  only:
+    - master
+
+.deploy: &deploy
+  before_script:
+    - oc login $OPENSHIFT_SERVER -u $OPENSHIFT_USER -p $OPENSHIFT_PASS --insecure-skip-tls-verify
+    - oc project "$CI_PROJECT_NAME-$CI_PROJECT_ID" 2> /dev/null || oc new-project "$CI_PROJECT_NAME-$CI_PROJECT_ID"
+  script:
+    - "envsubst < gitlabci/deployment.template.yml > gitlabci/deployment.yml"
+    - "oc apply -f gitlabci/deployment.yml -n $CI_PROJECT_NAME-$CI_PROJECT_ID"
+
+production:
+  <<: *deploy
+  stage: production-deploy
+  variables:
+    APP: production
+    APP_HOST: $CI_PROJECT_NAME.$OPENSHIFT_DOMAIN
+    CI_ENVIRONMENT_URL: http://$CI_PROJECT_NAME.$OPENSHIFT_DOMAIN
+    IMAGES_TAG: "prod"
+  environment:
+    name: production
+    url: http://$CI_PROJECT_NAME.$OPENSHIFT_DOMAIN
+  only:
+    - master
+
+staging:
+  <<: *deploy
+  stage: staging
+  variables:
+    APP: staging
+    APP_HOST: $CI_PROJECT_NAME-staging.$OPENSHIFT_DOMAIN
+    CI_ENVIRONMENT_URL: http://$CI_PROJECT_NAME-staging.$OPENSHIFT_DOMAIN
+    IMAGES_TAG: "$CI_COMMIT_REF_NAME"
+  environment:
+    name: staging
+    url: http://$CI_PROJECT_NAME-staging.$OPENSHIFT_DOMAIN
+  only:
+    - master
+
+review:
+  <<: *deploy
+  stage: review
+  variables:
+    APP: $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG
+    APP_HOST: $CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG.$OPENSHIFT_DOMAIN
+    CI_ENVIRONMENT_URL: http://$CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG.$OPENSHIFT_DOMAIN
+    IMAGES_TAG: "$CI_COMMIT_REF_NAME"
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: http://$CI_PROJECT_NAME-$CI_ENVIRONMENT_SLUG.$OPENSHIFT_DOMAIN
+    on_stop: stop_review
+  only:
+    - branches
+  except:
+    - master
+
+stop_review:
+  <<: *deploy
+  stage: cleanup
+  variables:
+    APP: $CI_PROJECT_NAME-$CI_COMMIT_REF_SLUG
+    GIT_STRATEGY: none
+  script:
+    - oc delete dc $APP -n $CI_PROJECT_NAME-$CI_PROJECT_ID
+    - oc delete svc $APP -n $CI_PROJECT_NAME-$CI_PROJECT_ID
+    - oc delete routes $APP -n $CI_PROJECT_NAME-$CI_PROJECT_ID
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    action: stop
+  when: manual
+  only:
+    - branches
+  except:
+    - master

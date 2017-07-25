@@ -1,0 +1,14 @@
+# Mac OS
+.DS_Store
+
+# IDE
+.idea
+.project
+
+
+# npm
+node_modules
+npm-debug.log
+
+# folder
+dist

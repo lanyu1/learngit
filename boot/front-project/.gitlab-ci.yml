@@ -1,0 +1,70 @@
+image: registry.saas.hand-china.com/openshift/origin-cli:v1.5.0
+
+stages:
+  - package
+  - build
+  - staging
+  - cleanup
+  
+variables:
+  CI_PROJECT_NAME: aiit-kanban
+
+.node-build-template: &node-build-template
+  image: registry.saas.hand-china.com/tools/node:7.10.0
+  stage: package
+  before_script:
+    - "cd boot"
+  script:
+    - "ln -s /cache/front_iam/node_modules node_modules"
+    - "npm install"
+    - "./node_modules/.bin/gulp start"
+    - "CONSOLE_HOST=http://$APP_HOST API_HOST=$API_HOST npm run build"
+    - "mkdir /cache/$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA/"
+    - "cp -r dist /cache/$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA/dist"
+
+node-build-staging:
+  <<: *node-build-template
+  variables:
+    APP_HOST: $CI_PROJECT_NAME-staging.$OPENSHIFT_DOMAIN
+    API_HOST: $API_HOST_STAGING
+  only:
+    - master
+
+.docker-build-template: &docker-build-template
+  stage: build
+  image: registry.saas.hand-china.com/tools/docker:latest
+  before_script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_PWD $REGISTRY_ADDRESS
+  script:
+    - "cp -r /cache/$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA/dist dist"
+    - "docker build -t registry.saas.hand-china.com/all4you/aiit:$CI_COMMIT_REF_NAME ."
+    - "docker push registry.saas.hand-china.com/all4you/aiit:$CI_COMMIT_REF_NAME"
+  after_script:
+    - "rm -rf /cache/$CI_PROJECT_NAME-$CI_COMMIT_REF_NAME-$CI_COMMIT_SHA"
+  only:
+    - branches
+
+docker-build:
+  <<: *docker-build-template
+
+.deploy: &deploy
+  before_script:
+    - oc login $OPENSHIFT_SERVER -u $OPENSHIFT_USER -p $OPENSHIFT_PASS --insecure-skip-tls-verify
+    - oc project "$CI_PROJECT_NAME"> /dev/null || oc new-project "$CI_PROJECT_NAME-$CI_PROJECT_ID"
+  script:
+    - "envsubst < deployment.template.yml > deployment.yml"
+    - "oc apply -f deployment.yml -n $CI_PROJECT_NAME"
+
+staging:
+  <<: *deploy
+  stage: staging
+  variables:
+    APP: staging
+    APP_HOST: $CI_PROJECT_NAME-staging.$OPENSHIFT_DOMAIN
+    CI_ENVIRONMENT_URL: http://$CI_PROJECT_NAME-staging.$OPENSHIFT_DOMAIN
+    IMAGES_TAG: "$CI_COMMIT_REF_NAME"
+  environment:
+    name: staging
+    url: http://$CI_PROJECT_NAME-staging.$OPENSHIFT_DOMAIN
+  only:
+    - master

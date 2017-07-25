@@ -1,0 +1,279 @@
+html {
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+}
+
+body {
+  font-size: 15px;
+  line-height: 24px;
+}
+
+a {
+  color: #49a9ee;
+  text-decoration: none;
+}
+
+a:hover {
+  color:#ff4081;
+  text-decoration: underline;
+}
+
+.mainContent {
+  margin-top: 20px;
+  margin-left: 20px;
+  .form-group {
+    margin-bottom: 15px;
+    label {
+      display: inline-block;
+      font-size: 14px;
+      max-width: 100%;
+      margin-bottom: 5px;
+    }
+    .form-field-suffix {
+      margin-left:10px;
+      color: #333;
+      font-size:12px;
+    }
+    .form-field {
+      border: 1px solid #ccc;
+      height: 32px !important;
+      input {
+        text-indent: 5px;
+        font-size: 12px !important;
+      }
+      &.field-disabled {
+        cursor:default !important;
+        background-color:#eee !important;
+        input {
+          color:#555 !important;
+        }
+      }
+    }
+    .form-text-field {
+      border: 1px solid #ccc;
+      textarea {
+        padding: 5px !important;
+        margin:0px !important;
+        font-size: 12px !important;
+      }
+    }
+    .form-control {
+      display: block;
+    }
+  }
+}
+.page-head {
+  width: 100%;
+  height: 47px;
+  border-bottom: 1px solid rgb(224, 224, 224);
+  margin: auto;
+  background-color:rgb(255,255,255);
+  h1 {
+    font-weight: normal;
+    float: left;
+    padding-left:20px;
+    font-size: 18px;
+    line-height: 47px;
+    display: inline;
+  }
+  .back-btn {
+    float: left;
+    color: #108ee9;
+    font-size: 20px;
+    padding:7px 12px 17px 12px;
+    width: 48px;
+    border: none !important;
+    height: 48px;
+  }
+  .back-btn:hover {
+    border:none;
+  }
+  .back-btn:focus{
+    border:none;
+  }
+  .back-btn:active{
+    border:none;
+  }
+  button {
+    svg {
+      margin-left:5px !important;
+    }
+    span {
+      padding-left:5px;
+      padding-right:10px;
+    }
+  }
+}
+
+table.table {
+  border:1px solid #e0e0e0;
+  .table-row {
+    height:36px;
+  }
+  thead {
+    border-bottom:none !important;
+    background-color:#eee;
+  }
+  thead tr {
+    height:37px !important;
+  }
+  thead th {
+    font-size:12px !important;
+    font-weight: bold !important;
+    height:37px !important;
+    padding:0 8px !important;
+  }
+  tbody td {
+    height:37px !important;
+    padding:0 8px !important;
+  }
+}
+.roleListBody{
+  width: 500px;
+  height: 350px !important;
+  padding:10px 15px !important;
+}
+.operateIcon{
+  color: #03A9F4 !important;
+  font-size:14px !important;
+  margin:0 9px 0 9px !important;
+}
+
+.operateIcons{
+  text-align: center;
+  margin-right:18px;
+  width: 150px;
+}
+
+.small-tooltip .ant-tooltip-inner{
+  min-height:0;
+  padding:2px 4px;
+}
+.menuPop{
+  z-index: 1500 !important;
+  height: 182px;
+  width: 280px;
+  position: absolute !important;
+  top: -5px !important;
+
+}
+.menuPop .ant-popover-inner-content{
+  padding: 0 !important;
+
+}
+
+.header-btn{
+  border:none !important;
+  font-size: 13px !important;
+}
+
+.header-btn:hover{
+  background-color: #EEEEEE !important;
+}
+.addtionInfo{
+  text-align: center;
+}
+
+.remove .ant-modal-footer{
+  border:none !important;
+}
+
+//去掉menuItem上面的hover里面的bottom
+.ant-menu-horizontal > .ant-menu-item{
+  border:none !important;
+}
+
+.ant-table-pagination {
+  padding-top: 16px !important;
+  margin:0 !important;
+}
+
+.ant-table-small .ant-table-header > table, .ant-table-small .ant-table-body > table {
+  padding: 0 !important;
+}
+
+.menuIcon{
+  background-image: url("../images/menu.png");
+  width: 24px;
+  height:24px;
+  background-repeat: no-repeat;
+  margin-top: 12px;
+}
+.logo{
+  display: block;
+  height: 30px;
+  line-height: 30px;
+}
+.logo img{
+  float: left;
+  height: 30px;
+  line-height: 30px;
+}
+img{
+  border-style: none;
+}
+.logo span {
+  color: #0f0f0f;
+  float: left;
+  padding-left: 10px;
+  font-size: 14px;
+  height: 30px;
+  line-height: 30px;
+}
+//调form的原生样式
+.test{
+margin-bottom: 10px;
+}
+ .test  .ant-form-item-label{
+  text-align: left!important;
+}
+.test .ant-form-explain{
+  height:15px!important;
+}
+ .a{
+   color: #2d3740;
+ }
+ .a:hover{
+   color: #2686dc;
+   text-decoration: none;
+ }
+
+ .deployment{
+   overflow: hidden;
+   //padding-top:10px;
+   height:70px;
+   margin-top: 20px;
+   margin-bottom: 20px;
+   display: -webkit-box;
+   text-overflow: ellipsis;
+   -webkit-line-clamp: 3;
+   -webkit-box-orient: vertical;
+   font-size:12px;
+   color:#707070;
+ }
+
+.ant-input[disabled]{
+  cursor: text !important;
+}
+
+.ant-select-disabled .ant-select-selection{
+  cursor: text !important;
+}
+
+.versionIcon{
+  background-image: url("../images/version.png");
+  background-repeat: no-repeat;
+  width: 14px;
+  height:14px;
+  display:inline-block;
+}

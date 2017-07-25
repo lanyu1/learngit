@@ -1,0 +1,55 @@
+const zh_CN = {
+//master
+  "user.preferences": "用户首选项",
+  "signOut": "安全退出",
+  "choose": "请选择",
+  "select": "选择",
+  "cancel": "返回",
+  //menu
+  "default": "默认产品",
+  "hap-user-service": "用户服务",
+  "hap-user-service.client": "客户端",
+  "hap-user-service.excel": "数据管理",
+  "hap-user-service.ldap": "LDAP管理",
+  "hap-user-service.organization": "组织管理",
+  "hap-user-service.password-policy": "密码策略",
+  "hap-user-service.service": "服务管理",
+  "hap-user-service.role": "角色查看",
+  "hap-user-service.user": "用户管理",
+  "hap-user-service.project": "项目管理",
+  "hap-user-service.member-role-organization": "角色分配",
+  "hap-user-service.member-role-project": "角色分配",
+  "hap-user-service.token": "Token 管理",
+  "hap-user-service.user-info": "用户信息维护",
+  "hap-user-service.password": "密码修改",
+
+  "hap-framework-service": "框架服务",
+  "hap-framework-service.lookup": "快码管理",
+  "hap-framework-service.language": "语言管理",
+
+  "hap-user-admin-service": "用户管理服务",
+  "hap-user-admin-service.label": "标签管理",
+  "hap-user-admin-service.organization": "组织管理",
+  "hap-user-admin-service.client": "客户端管理",
+
+  "hap-catalog-service":"商品模版服务",
+  "hap-catalog-service.catalog":"商品模版管理",
+
+  "hap-catalog-admin-service":"商品模板管理服务",
+  "hap-catalog-admin-service.catalog":"商品模板管理",
+  "hap-catalog-admin-service.label":"模板标签",
+  "hap-deployment-service":"部署服务",
+  "hap-deployment-service.category":"部署类别",
+  "hap-deployment-service.deployment":"部署管理",
+  "hap-deployment-service.deployment-version":"部署版本",
+  "hap-deployment-admin-service":"部署管理服务",
+  "hap-deployment-admin-service.deployment":"部署管理",
+  "hap-deployment-admin-service.catalog":"部署模板管理",
+  "hap-deployment-admin-service.label":"部署标签管理",
+  "hap-deployment-service.deployment.project":"部署",
+  "hap-deployment-service.instance":"部署实例",
+  "hap-user-service.menu":"菜单管理",
+  "hap-deployment-service.kanban": "看板服务",
+  "aiit-service-demo": "看板管理"
+};
+export default zh_CN;  
